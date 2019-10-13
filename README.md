@@ -1,6 +1,7 @@
 # flutter_reddit_test
 
 A mini flutter reddit client, just for learning purpose
+(I have no idea what I'm doing :/)
 
 ## Getting Started
 

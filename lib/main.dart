@@ -4,8 +4,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_reddit_test/post.dart';
+import 'package:flutter_reddit_test/entities/post.dart';
+import 'package:flutter_reddit_test/post_detail.dart';
 import 'package:http/http.dart' as http;
+import 'package:timeago/timeago.dart' as timeago;
 
 void main() => runApp(MyApp());
 
@@ -69,22 +71,72 @@ List<Post> parsePosts(String responseBody) {
 
   return parsed.map<Post>((json) => Post.fromJson(json['data'])).toList();
 }
-Future<List<Post>> fetchPosts() async {
-  final response = await http.get('https://www.reddit.com/r/popular/.json');
-  return compute(parsePosts, response.body);
+
+
+class PostsPage extends StatefulWidget  {
+
+  @override
+  State<StatefulWidget> createState() => PostsPageState();
+
 }
 
-class PostsPage extends StatelessWidget  {
+class PostsPageState extends State<PostsPage> {
+
+  Future<List<Post>> _posts;
+  ScrollController _scrollController = ScrollController();
+  bool isLoadingExtra = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _posts = fetchPosts();
+
+    _scrollController.addListener(() {
+
+      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+        setState(() {
+          isLoadingExtra = true;
+          _posts.then((List<Post> posts) {
+            Future<List<Post>> nextPosts = fetchPosts(lastPost: posts.last);
+            nextPosts.then((List<Post> newPosts) {
+              posts.addAll(newPosts);
+              setState(() {
+                isLoadingExtra = false;
+              });
+            });
+          });
+        });
+      }
+    });
+  }
 
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<List<Post>> fetchPosts({Post lastPost}) async {
+    final response = await http.get('https://www.reddit.com/r/popular/.json' + (lastPost != null ? '?from:' + lastPost.id : ''));
+    return compute(parsePosts, response.body);
+  }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Post>>(
-      future: fetchPosts(),
+      future: _posts,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return PostsList(snapshot.data);
+          return RefreshIndicator(
+            child: PostsList(snapshot.data, _scrollController, isLoadingExtra),
+            onRefresh: () {
+              setState(() {
+                _posts = fetchPosts();
+              });
+              return _posts;
+            },
+          );
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");
         }
@@ -96,64 +148,79 @@ class PostsPage extends StatelessWidget  {
 }
 
 class PostsList extends StatelessWidget {
-  final List<Post> posts;
+  final List<Post> _posts;
+  final ScrollController _scrollController;
+  final bool _isLoadingExtra;
 
-  PostsList(this.posts);
+  PostsList(this._posts, this._scrollController, this._isLoadingExtra);
 
   @override
   Widget build(BuildContext context) {
     return Scrollbar(
       child: ListView.builder(
-          itemCount: posts.length,
+          controller: _scrollController,
+          itemCount: _posts.length,
           itemBuilder: (BuildContext context, int index) {
-            Post post = posts[index];
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-              child: Ink(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow (
-                      color: Colors.black12,
-                      offset: Offset(0,  1),
-                      blurRadius: 2,
-                    ),
-                  ],
-                ),
-                child: InkWell(
-                  onTap: () => print('todo'),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 5),
-                          child: Row(
-                            children: <Widget>[
-                              Text(post.subreddit,
-                                style: TextStyle(color: Colors.black54, fontSize: 12),
-                              )
-                            ],
-                          ),
-                        ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            if (post.thumbnail.contains('http'))
-                              Padding(
-                                  padding: EdgeInsets.only(right: 10),
-                                  child: Image.network(post.thumbnail, width: 50)
-                              ),
-                            Flexible(
-                              child: Text(post.title, softWrap: true, textAlign: TextAlign.left,),
-                            )
-                          ],
+            Post post = _posts[index];
+            return Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow (
+                          color: Colors.black12,
+                          offset: Offset(0,  1),
+                          blurRadius: 2,
                         ),
                       ],
                     ),
+                    child: InkWell(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => PostDetail(post)),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 5),
+                              child: Row(
+                                children: <Widget>[
+                                  Text(post.subreddit,
+                                    style: TextStyle(color: Colors.black87, fontSize: 12),
+                                  ),
+                                  Text(' • Posted by ${post.author} ${timeago.format(post.createdAt)}',
+                                    style: TextStyle(color: Colors.black54, fontSize: 12),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                if (post.thumbnail.contains('http'))
+                                  Padding(
+                                      padding: EdgeInsets.only(right: 10),
+                                      child: Image.network(post.thumbnail, width: 50)
+                                  ),
+                                Flexible(
+                                  child: Text(post.title, softWrap: true, textAlign: TextAlign.left,),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                if (_isLoadingExtra && index == _posts.length - 1)
+                  Padding(child: CircularProgressIndicator(), padding: EdgeInsets.all(10))
+              ],
             );
           }
       ),

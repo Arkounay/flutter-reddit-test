@@ -4,10 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_reddit_test/entities/post.dart';
-import 'package:flutter_reddit_test/post_detail.dart';
+import 'entities/post.dart';
+import 'widgets/post_item_widget.dart';
 import 'package:http/http.dart' as http;
-import 'package:timeago/timeago.dart' as timeago;
 
 void main() => runApp(MyApp());
 
@@ -92,7 +91,6 @@ class PostsPageState extends State<PostsPage> {
     _posts = fetchPosts();
 
     _scrollController.addListener(() {
-
       if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
         setState(() {
           isLoadingExtra = true;
@@ -109,7 +107,6 @@ class PostsPageState extends State<PostsPage> {
       }
     });
   }
-
 
   @override
   void dispose() {
@@ -164,62 +161,12 @@ class PostsList extends StatelessWidget {
             Post post = _posts[index];
             return Column(
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-                  child: Ink(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow (
-                          color: Colors.black12,
-                          offset: Offset(0,  1),
-                          blurRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: InkWell(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => PostDetail(post)),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 5),
-                              child: Row(
-                                children: <Widget>[
-                                  Text(post.subreddit,
-                                    style: TextStyle(color: Colors.black87, fontSize: 12),
-                                  ),
-                                  Text(' • Posted by ${post.author} ${timeago.format(post.createdAt)}',
-                                    style: TextStyle(color: Colors.black54, fontSize: 12),
-                                  )
-                                ],
-                              ),
-                            ),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                if (post.thumbnail.contains('http'))
-                                  Padding(
-                                      padding: EdgeInsets.only(right: 10),
-                                      child: Image.network(post.thumbnail, width: 50)
-                                  ),
-                                Flexible(
-                                  child: Text(post.title, softWrap: true, textAlign: TextAlign.left,),
-                                )
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                if (_isLoadingExtra && index == _posts.length - 1)
-                  Padding(child: CircularProgressIndicator(), padding: EdgeInsets.all(10))
+                PostItemWidget(post),
+                if (index == _posts.length - 1)
+                  if (_isLoadingExtra)
+                    Padding(child: CircularProgressIndicator(), padding: EdgeInsets.all(10))
+                  else
+                    Padding(padding: EdgeInsets.all(30))
               ],
             );
           }

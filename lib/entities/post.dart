@@ -1,9 +1,9 @@
 class Post {
-  final String id, subreddit, author, title, content, thumbnail, url, source;
+  final String id, subreddit, author, title, content, thumbnail, url, source, permalink;
   final DateTime createdAt;
   final int score, numComments;
 
-  Post({this.id, this.subreddit, this.author, this.title, this.score, this.createdAt, this.thumbnail, this.url, this.source, this.content, this.numComments});
+  Post({this.id, this.subreddit, this.author, this.title, this.score, this.createdAt, this.thumbnail, this.url, this.source, this.content, this.numComments, this.permalink});
 
   factory Post.fromJson(Map<String, dynamic> json) {
     String source;
@@ -23,11 +23,20 @@ class Post {
       source: source,
       content: json['selftext'] ?? '',
       numComments: json['numComments'],
+      permalink: json['permalink'],
     );
   }
 
   bool get hasThumbnail => thumbnail.contains('http');
 
-  String get post_url => 'https://www.reddit.com/' + subreddit + 'comments/' + id + '/.json';
+  String get fullPermalink => 'https://www.reddit.com/' + permalink + '.json';
+
+  String get abbrScore {
+    if (score > 1000) {
+      return (score / 1000).round().toString() + 'k';
+    }
+
+    return score.toString();
+  }
 
 }

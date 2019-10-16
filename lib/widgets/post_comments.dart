@@ -1,10 +1,14 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_reddit_test/entities/comment.dart';
 import 'package:flutter_reddit_test/entities/post.dart';
 import 'package:http/http.dart' as http;
+import 'package:timeago/timeago.dart' as timeago;
+
 
 class PostCommentsWidget extends StatefulWidget  {
   Post post;
@@ -16,32 +20,6 @@ class PostCommentsWidget extends StatefulWidget  {
 
 }
 
-class Comment {
-  String text;
-  List<Comment> replies;
-
-  Comment({this.text, this.replies});
-  
-  factory Comment.fromJson(Map<String, dynamic> json) {
-    if (json['kind'] == 'more') {
-      return null;
-    }
-
-    List<Comment> replies = List();
-   /* for (var value in json['replies']) {
-      Comment reply = Comment.fromJson(value);
-      if (reply != null) {
-        replies.add(reply);
-      }
-    }*/
-
-    return Comment(
-      text: json['body'],
-      replies: replies
-    );
-  }
-}
-
 class PostCommentsWidgetState extends State<PostCommentsWidget> {
   Post _post;
   Future<List<Comment>> _comments;
@@ -49,14 +27,19 @@ class PostCommentsWidgetState extends State<PostCommentsWidget> {
   PostCommentsWidgetState(this._post);
 
   Future<List<Comment>> fetchComments(Post post) async {
-    final response = await http.get(post.post_url);
+    final response = await http.get(post.fullPermalink);
+    debugPrint(post.fullPermalink);
     debugPrint(response.body);
+
     return compute(parsePosts, response.body);
   }
 
   static List<Comment> parsePosts(String responseBody) {
     final List parsed = json.decode(responseBody);
-    return parsed.map<Comment>((json) => Comment.fromJson(parsed[0]['data']['children'])).toList();
+    if (parsed.length > 1) {
+      return parsed[1]['data']['children'].map<Comment>((json) => Comment.fromJson(json)).toList();
+    }
+    return new List<Comment>();
   }
 
   @override
@@ -64,6 +47,49 @@ class PostCommentsWidgetState extends State<PostCommentsWidget> {
     _comments = fetchComments(this._post);
   }
 
+  Widget _createCommentsWidget(List<Comment> comments, int level) {
+    List<Widget> res = new List();
+
+    for (Comment comment in comments) {
+      if (comment != null) {
+
+        res.add(
+            Container(
+              padding: const EdgeInsets.only(left: 8.0),
+              decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.black26))),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
+                    child: Column(
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            Text(comment.author, style: TextStyle(color: Colors.blue)),
+                            Text(' • ${comment.score} points • ${timeago.format(comment.createdAt)}', style: TextStyle(color: Colors.black54))
+                          ],
+                        ),
+                        MarkdownBody(data: comment.text),
+                      ],
+                    ),
+                  ),
+                  if (comment.replies.isNotEmpty)
+                    _createCommentsWidget(comment.replies, level + 1),
+                ],
+              ),
+            )
+        );
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: res,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,15 +98,23 @@ class PostCommentsWidgetState extends State<PostCommentsWidget> {
       builder: (BuildContext, AsyncSnapshot<List<Comment>> snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data.length > 0) {
-            return Text(snapshot.data.first.text);
+            return _createCommentsWidget(snapshot.data, 0);
+            // return Text(snapshot.data.first.text);
           } else {
-            return Text("PAS DE COMMENTAIRES LOL");
+            return Text("No comments");
           }
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");
         }
 
-        return CircularProgressIndicator();
+        return Align(
+          alignment: Alignment.center,
+          child: Container(
+              width: 30,
+              height: 30,
+              child: CircularProgressIndicator(),
+          ),
+        );
       }
     );
   }

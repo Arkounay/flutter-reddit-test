@@ -115,7 +115,7 @@ class PostsPageState extends State<PostsPage> {
   }
 
   Future<List<Post>> fetchPosts({Post lastPost}) async {
-    final response = await http.get('https://www.reddit.com/r/popular/.json' + (lastPost != null ? '?from:' + lastPost.id : ''));
+    final response = await http.get('https://www.reddit.com/r/popular/top.json' + (lastPost != null ? '?from:' + lastPost.id : ''));
     return compute(parsePosts, response.body);
   }
 

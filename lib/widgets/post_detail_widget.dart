@@ -12,10 +12,7 @@ class PostDetailWidget extends StatelessWidget  {
   Widget _addImage() {
     if (post.source != null) {
       return Hero(
-          child: Padding(
-            padding: EdgeInsets.only(right: 10),
-            child: Image.network(post.source, fit: BoxFit.fitWidth),
-          ),
+          child: Image.network(post.source, fit: BoxFit.fitWidth),
           tag: 'post_thumbnail_' + post.id);
     }
     return Container();
@@ -34,7 +31,7 @@ class PostDetailWidget extends StatelessWidget  {
         children: <Widget>[
           _addImage(),
           _addText(),
-          /*PostCommentsWidget(post)*/
+          PostCommentsWidget(post)
         ]
     );
   }

@@ -38,6 +38,14 @@ class PostItemWidget extends StatelessWidget {
                   child: Row(
                     children: <Widget>[
                       Text(
+                        post.abbrScore,
+                        style: TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        ' • ',
+                        style: TextStyle(color: Colors.black54, fontSize: 12),
+                      ),
+                      Text(
                         post.subreddit,
                         style: TextStyle(color: Colors.black87, fontSize: 12),
                       ),

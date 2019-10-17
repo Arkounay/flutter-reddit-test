@@ -3,6 +3,13 @@
 A mini flutter reddit client, just for learning purpose
 (I have no idea what I'm doing :/)
 
+## The App
+- Browse /r/popular
+- Allowed to change subreddit
+- Display post content (does not work with cross posts)
+- Display comments recursively (but not every comments, there is no "load more" yet)
+- Open in browser
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.

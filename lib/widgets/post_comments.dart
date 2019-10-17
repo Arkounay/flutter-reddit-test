@@ -4,8 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:flutter_reddit_test/entities/comment.dart';
-import 'package:flutter_reddit_test/entities/post.dart';
+import 'package:flutter_reddit_test/models/comment.dart';
+import 'package:flutter_reddit_test/models/post.dart';
 import 'package:http/http.dart' as http;
 import 'package:timeago/timeago.dart' as timeago;
 

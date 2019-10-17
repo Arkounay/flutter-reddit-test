@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_reddit_test/entities/post.dart';
+import 'package:flutter_reddit_test/models/post.dart';
 import '../post_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
 

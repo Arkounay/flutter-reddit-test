@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'entities/post.dart';
+import 'models/post.dart';
 import 'widgets/post_detail_widget.dart';
 
 class PostPage extends StatelessWidget {

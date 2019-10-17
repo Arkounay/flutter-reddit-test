@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:flutter_reddit_test/entities/post.dart';
+import 'package:flutter_reddit_test/models/post.dart';
 import 'package:flutter_reddit_test/widgets/post_comments.dart';
 
 class PostDetailWidget extends StatelessWidget  {

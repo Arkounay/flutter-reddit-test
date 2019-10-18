@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'models/post.dart';
 import 'widgets/post_detail_widget.dart';
+import 'package:share/share.dart';
 
 class PostPage extends StatelessWidget {
   final Post post;
@@ -31,6 +32,13 @@ class PostPage extends StatelessWidget {
                     throw 'Could not launch $url';
                   }
                 },
+              ),
+              IconButton(
+                icon: Icon(Icons.share),
+                onPressed: () {
+                  final url = 'https://www.reddit.com' + post.permalink;
+                  Share.share(url);
+                }
               ),
             ],
             leading: IconButton(icon:Icon(Icons.arrow_back),

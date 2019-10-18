@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -74,6 +75,23 @@ class _HomePageState extends State<HomePage> {
             // the App.build method, and use it to set our appbar title.
             title: Text('Reddit ' + subreddit.toString()),
             actions: <Widget>[
+              Theme(
+                data: ThemeData.dark(),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<Sort>(
+                    value: subreddit.sort,
+                    onChanged: (Sort newValue) {
+                      subreddit.sort = newValue;
+                    },
+                    items: Sort.values.map<DropdownMenuItem<Sort>>((Sort value) {
+                      return DropdownMenuItem<Sort>(
+                        value: value,
+                        child: Text(EnumToString.parse(value)),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
               IconButton(
                 icon: Icon(Icons.change_history),
                 onPressed: () async {
@@ -150,7 +168,8 @@ class PostsPageState extends State<PostsPage> {
 
   Future<List<Post>> _posts;
   ScrollController _scrollController = ScrollController();
-  bool isLoadingExtra = false;
+  bool _isLoadingExtra = false;
+  bool _refreshing = false;
 
   /* // widget.subreddit.addListener seems nicer
   @override
@@ -175,13 +194,13 @@ class PostsPageState extends State<PostsPage> {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
         setState(() {
-          isLoadingExtra = true;
+          _isLoadingExtra = true;
           _posts.then((List<Post> posts) {
             Future<List<Post>> nextPosts = fetchPosts(lastPost: posts.last, subreddit: widget.subreddit);
             nextPosts.then((List<Post> newPosts) {
               posts.addAll(newPosts);
               setState(() {
-                isLoadingExtra = false;
+                _isLoadingExtra = false;
               });
             });
           });
@@ -197,6 +216,7 @@ class PostsPageState extends State<PostsPage> {
   }
 
   Future<List<Post>> fetchPosts({@required Subreddit subreddit, Post lastPost}) async {
+    debugPrint(subreddit.url);
     final response = await http.get(subreddit.url + (lastPost != null ? '?from:' + lastPost.id : ''));
     return compute(parsePosts, response.body);
   }
@@ -206,13 +226,19 @@ class PostsPageState extends State<PostsPage> {
     return FutureBuilder<List<Post>>(
       future: _posts,
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
+        if (snapshot.hasData && snapshot.connectionState == ConnectionState.done || _isLoadingExtra || _refreshing) {
           if (snapshot.data.isNotEmpty) {
             return RefreshIndicator(
-              child: PostsList(snapshot.data, _scrollController, isLoadingExtra),
+              child: PostsList(snapshot.data, _scrollController, _isLoadingExtra),
               onRefresh: () {
                 setState(() {
+                  _refreshing = true;
                   _posts = fetchPosts(subreddit: widget.subreddit);
+                  _posts.then((_) {
+                    setState(() {
+                      _refreshing = false;
+                    });
+                  });
                 });
                 return _posts;
               },

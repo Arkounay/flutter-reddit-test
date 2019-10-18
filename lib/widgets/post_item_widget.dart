@@ -50,7 +50,7 @@ class PostItemWidget extends StatelessWidget {
                         style: TextStyle(color: Colors.black87, fontSize: 12),
                       ),
                       Text(
-                        ' • Posted by ${post.author} ${timeago.format(post.createdAt)}',
+                        ' • ${post.author} • ${timeago.format(post.createdAt)}',
                         style: TextStyle(color: Colors.black54, fontSize: 12),
                       )
                     ],

@@ -58,7 +58,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   _changeSubreddit(Subreddit subreddit) {
-    print('lol');
     setState(() {
       subreddit.name = _subredditAlertController.text;
     });

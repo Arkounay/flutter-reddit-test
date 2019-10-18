@@ -31,5 +31,9 @@ class Subreddit extends ChangeNotifier {
 }
 
 enum Sort {
-  Best, Hot, New, Top, Rising
+  Best,
+  Hot,
+  New,
+  Top,
+  Rising
 }

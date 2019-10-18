@@ -16,7 +16,7 @@ void main() => runApp(MyApp());
 class MyApp extends StatefulWidget {
 
   @override
-  State<StatefulWidget> createState()  => MyAppState();
+  State<StatefulWidget> createState() => MyAppState();
 }
 
 class MyAppState extends State<MyApp> {
@@ -68,92 +68,91 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Consumer<Subreddit>(
-      builder: (context, subreddit, child) {
-        return Scaffold(
-          appBar: AppBar(
-            // Here we take the value from the MyHomePage object that was created by
-            // the App.build method, and use it to set our appbar title.
-            title: Text('Reddit ' + subreddit.toString()),
-            actions: <Widget>[
-              Theme(
-                data: ThemeData.dark(),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<Sort>(
-                    value: subreddit.sort,
-                    onChanged: (Sort newValue) {
-                      subreddit.sort = newValue;
-                    },
-                    items: Sort.values.map<DropdownMenuItem<Sort>>((Sort value) {
-                      return DropdownMenuItem<Sort>(
-                        value: value,
-                        child: Text(EnumToString.parse(value)),
-                      );
-                    }).toList(),
+        builder: (context, subreddit, child) {
+          return Scaffold(
+              appBar: AppBar(
+                // Here we take the value from the MyHomePage object that was created by
+                // the App.build method, and use it to set our appbar title.
+                title: Text('Reddit ' + subreddit.toString()),
+                actions: <Widget>[
+                  Theme(
+                    data: ThemeData.dark(),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<Sort>(
+                        value: subreddit.sort,
+                        onChanged: (Sort newValue) {
+                          subreddit.sort = newValue;
+                        },
+                        items: Sort.values.map<DropdownMenuItem<Sort>>((Sort value) {
+                          return DropdownMenuItem<Sort>(
+                            value: value,
+                            child: Text(EnumToString.parse(value)),
+                          );
+                        }).toList(),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.change_history),
-                onPressed: () async {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false, // user must tap button!
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Change subreddit'),
-                        content: SingleChildScrollView(
-                          child: ListBody(
-                            children: <Widget>[
-                              TextField(
-                                controller: _subredditAlertController,
-                                onSubmitted: (String str){
-                                  _changeSubreddit(subreddit);
-                                },
-                                decoration: InputDecoration(
-                                    hintText: 'Enter a subreddit'
+                  IconButton(
+                      icon: Icon(Icons.change_history),
+                      onPressed: () async {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false, // user must tap button!
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Change subreddit'),
+                              content: SingleChildScrollView(
+                                child: ListBody(
+                                  children: <Widget>[
+                                    TextField(
+                                      controller: _subredditAlertController,
+                                      onSubmitted: (String str) {
+                                        _changeSubreddit(subreddit);
+                                      },
+                                      decoration: InputDecoration(
+                                          hintText: 'Enter a subreddit'
+                                      ),
+                                    )
+                                  ],
                                 ),
-                              )
-                            ],
-                          ),
-                        ),
-                        actions: <Widget>[
-                          FlatButton(
-                            child: Text('Cancel'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                          FlatButton(
-                            child: Text('Go to subreddit'),
-                            onPressed: () => _changeSubreddit(subreddit),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                }
+                              ),
+                              actions: <Widget>[
+                                FlatButton(
+                                  child: Text('Cancel'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                                FlatButton(
+                                  child: Text('Go to subreddit'),
+                                  onPressed: () => _changeSubreddit(subreddit),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                  ),
+                ],
               ),
-            ],
-          ),
-           body: PostsPage(subreddit: subreddit)
-        );
-      }
+              body: PostsPage(subreddit: subreddit)
+          );
+        }
     );
   }
 }
-List<Post> parsePosts(String responseBody) {
 
+List<Post> parsePosts(String responseBody) {
   try {
     final List parsed = json.decode(responseBody)['data']['children'];
     return parsed.map<Post>((json) => Post.fromJson(json['data'])).toList();
   } catch (e) {
     return null;
   }
-
 }
 
 
-class PostsPage extends StatefulWidget  {
+class PostsPage extends StatefulWidget {
 
   final Subreddit subreddit;
 

@@ -61,10 +61,8 @@ class PostItemWidget extends StatelessWidget {
                   children: <Widget>[
                     if (post.hasThumbnail)
                       Hero(
-                        child: Padding(
-                            padding: EdgeInsets.only(right: 10),
-                            child: Image.network(post.thumbnail, width: 50)),
-                            tag: 'post_thumbnail_' + post.id,
+                        child: Padding(padding: EdgeInsets.only(right: 10), child: Image.network(post.thumbnail, width: 50)),
+                        tag: 'post_thumbnail_' + post.id,
                       ),
                     Flexible(
                       child: Text(

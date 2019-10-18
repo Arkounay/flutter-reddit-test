@@ -10,7 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:timeago/timeago.dart' as timeago;
 
 
-class PostCommentsWidget extends StatefulWidget  {
+class PostCommentsWidget extends StatefulWidget {
   Post post;
 
   PostCommentsWidget(this.post);
@@ -94,28 +94,28 @@ class PostCommentsWidgetState extends State<PostCommentsWidget> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Comment>>(
-      future: _comments,
-      builder: (BuildContext, AsyncSnapshot<List<Comment>> snapshot) {
-        if (snapshot.hasData) {
-          if (snapshot.data.length > 0) {
-            return _createCommentsWidget(snapshot.data, 0);
-            // return Text(snapshot.data.first.text);
-          } else {
-            return Text("No comments");
+        future: _comments,
+        builder: (BuildContext, AsyncSnapshot<List<Comment>> snapshot) {
+          if (snapshot.hasData) {
+            if (snapshot.data.length > 0) {
+              return _createCommentsWidget(snapshot.data, 0);
+              // return Text(snapshot.data.first.text);
+            } else {
+              return Text("No comments");
+            }
+          } else if (snapshot.hasError) {
+            return Text("${snapshot.error}");
           }
-        } else if (snapshot.hasError) {
-          return Text("${snapshot.error}");
-        }
 
-        return Align(
-          alignment: Alignment.center,
-          child: Container(
+          return Align(
+            alignment: Alignment.center,
+            child: Container(
               width: 30,
               height: 30,
               child: CircularProgressIndicator(),
-          ),
-        );
-      }
+            ),
+          );
+        }
     );
   }
 

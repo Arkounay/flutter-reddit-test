@@ -1,12 +1,9 @@
 # Flutter Reddit Client Test
 
+| Image 1                                    | Image 2                                    |
+| ------------------------------------------ | ------------------------------------------ |
+| <img width="260" src="/docs/screen_1.png"> | <img width="260" src="/docs/screen_2.png"> |
 
-| Image 1  | Image 2 |
-| ------------- | ------------- |
-| <img width="260" src="/docs/screen_1.png">l  | <img width="260" src="/docs/screen_2.png">      |
-
-
-                               
 
 A mini flutter reddit client, just for learning purpose
 (I have no idea what I'm doing :/)

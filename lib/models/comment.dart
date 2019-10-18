@@ -22,11 +22,12 @@ class Comment {
     } catch (e) {}
 
     return Comment(
-        text: json['data']['body'] ?? '',
-        author: json['data']['author'] ?? '',
-        createdAt: DateTime.fromMicrosecondsSinceEpoch((json['data']['created'] * 1000000).round()),
-        replies: replies,
-        score: json['data']['score'] ?? 0,
+      text: json['data']['body'] ?? '',
+      author: json['data']['author'] ?? '',
+      createdAt: DateTime.fromMicrosecondsSinceEpoch((json['data']['created'] * 1000000).round()),
+      replies: replies,
+      score: json['data']['score'] ?? 0,
     );
   }
+
 }

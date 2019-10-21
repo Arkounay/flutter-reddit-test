@@ -5,18 +5,27 @@ import 'package:sqflite/sqflite.dart';
 class Db {
 
   static final Db _instance = Db._internal();
+
   factory Db() => _instance;
 
   Database _db;
-  Database get db => _db;
 
-  Db._internal() {
-    _init();
+  Future<Database> get db async {
+    if (_db != null) {
+      return _db;
+    }
+    _db = await _init();
+
+    return _db;
   }
 
+  Db._internal();
+
+
   _init() async {
-    _db = await openDatabase(
+      return openDatabase(
         join(await getDatabasesPath(), 'main.db'),
+        version: 1,
         onCreate: (db, version) {
           return db.execute("""
             CREATE TABLE `post` (
@@ -25,14 +34,14 @@ class Db {
               `author` varchar(255) NOT NULL,
               `title` varchar(255) NOT NULL,
               `content` varchar(255) NOT NULL,
-              `thumbnail` varchar(255) NOT NULL,
-              `url` varchar(255) NOT NULL,
-              `source` varchar(255) NOT NULL,
+              `thumbnail` varchar(255),
+              `url` varchar(255),
+              `source` varchar(255),
               `permalink` varchar(255) NOT NULL,
-              `createdAt` int(11) NOT NULL,
-              `savedAt` int(11) NOT NULL,
+              `createdAt` int(11),
+              `savedAt` int(11),
               `score` int(11) NOT NULL,
-              `numComments` int(11) NOT NULL
+              `numComments` int(11)
             )
             """);
         }
@@ -40,9 +49,9 @@ class Db {
   }
 
   Future<void> insertPost(Post post) async {
-    // Get a reference to the database.
-    final db = _db;
-    await db.insert(
+    final Database client = await db;
+    post.savedAt = DateTime.now();
+    await client.insert(
       'post',
       post.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -50,7 +59,8 @@ class Db {
   }
 
   Future<List<Post>> posts() async {
-    final List<Map<String, dynamic>> maps = await db.query('dogs');
+    final Database client = await db;
+    final List<Map<String, dynamic>> maps = await client.query('post');
 
     return List.generate(maps.length, (i) {
       return Post(
@@ -63,12 +73,23 @@ class Db {
         url: maps[i]['url'],
         source: maps[i]['source'],
         permalink: maps[i]['permalink'],
-        createdAt: maps[i]['createdAt'],
-        savedAt: maps[i]['savedAt'],
+        createdAt: DateTime.fromMicrosecondsSinceEpoch(maps[i]['createdAt']),
+        savedAt: DateTime.fromMicrosecondsSinceEpoch(maps[i]['savedAt']),
         score: maps[i]['score'],
         numComments: maps[i]['numComments'],
       );
     });
+  }
+
+  Future<bool> isPostSaved(Post post) async {
+    final Database client = await db;
+    final List<Map<String, dynamic>> maps = await client.rawQuery('Select 1 from post where post.id = ?', [post.id]);
+    return maps.isNotEmpty;
+  }
+
+  Future<int> removePost(Post post) async {
+    final Database client = await db;
+    return await client.delete('post', where: 'id = ?', whereArgs: [post.id]);
   }
 
 

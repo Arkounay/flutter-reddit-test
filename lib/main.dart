@@ -5,7 +5,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_reddit_test/saved_page.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'models/post.dart';
 import 'models/subreddit.dart';
 import 'widgets/post_item_widget.dart';
@@ -65,11 +67,98 @@ class _HomePageState extends State<HomePage> {
     Navigator.of(context).pop();
   }
 
+  void _changeSubredditDialog(Subreddit subreddit) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Change subreddit'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  controller: _subredditAlertController,
+                  onSubmitted: (String str) {
+                    _changeSubreddit(subreddit);
+                  },
+                  decoration: InputDecoration(
+                      hintText: 'Enter a subreddit'
+                  ),
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text('Go to subreddit'),
+              onPressed: () => _changeSubreddit(subreddit),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<Subreddit>(
         builder: (context, subreddit, child) {
           return Scaffold(
+              drawer: Drawer(
+                  child: Column(
+                    // Important: Remove any padding from the ListView.
+                    children: <Widget>[
+                      Expanded(
+                        // ListView contains a group of widgets that scroll inside the drawer
+                        child: ListView(
+                          children: <Widget>[
+                            DrawerHeader(
+                              child: Text('Reddit Flutter Test', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                              ),
+                            ),
+                            ListTile(
+                              title: Text('Change Subreddit'),
+                              onTap: () {
+                                Navigator.pop(context);
+                                _changeSubredditDialog(subreddit);
+                              },
+                            ),
+                            ListTile(
+                              title: Text('Saved Posts'),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => SavedPage()),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      ListTile(
+                        title: Text('View on GitHub'),
+                        onTap: () async {
+                          final url = 'https://github.com/Arkounay/flutter-reddit-test';
+                          if (await canLaunch(url)) {
+                            await launch(url);
+                          } else {
+                            throw 'Could not launch $url';
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+              ),
               appBar: AppBar(
                 // Here we take the value from the MyHomePage object that was created by
                 // the App.build method, and use it to set our appbar title.
@@ -92,46 +181,14 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-                  IconButton(
-                      icon: Icon(Icons.change_history),
-                      onPressed: () async {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false, // user must tap button!
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Change subreddit'),
-                              content: SingleChildScrollView(
-                                child: ListBody(
-                                  children: <Widget>[
-                                    TextField(
-                                      controller: _subredditAlertController,
-                                      onSubmitted: (String str) {
-                                        _changeSubreddit(subreddit);
-                                      },
-                                      decoration: InputDecoration(
-                                          hintText: 'Enter a subreddit'
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                              actions: <Widget>[
-                                FlatButton(
-                                  child: Text('Cancel'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                                FlatButton(
-                                  child: Text('Go to subreddit'),
-                                  onPressed: () => _changeSubreddit(subreddit),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      }
+                  Tooltip(
+                    message: 'Change subreddit',
+                    child: IconButton(
+                        icon: Icon(Icons.change_history),
+                        onPressed: () async {
+                          _changeSubredditDialog(subreddit);
+                        }
+                    ),
                   ),
                 ],
               ),
@@ -215,7 +272,6 @@ class PostsPageState extends State<PostsPage> {
   }
 
   Future<List<Post>> fetchPosts({@required Subreddit subreddit, Post lastPost}) async {
-    debugPrint(subreddit.url);
     final response = await http.get(subreddit.url + (lastPost != null ? '?from:' + lastPost.id : ''));
     return compute(parsePosts, response.body);
   }

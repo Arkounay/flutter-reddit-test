@@ -29,7 +29,6 @@ class PostCommentsWidgetState extends State<PostCommentsWidget> {
   Future<List<Comment>> fetchComments(Post post) async {
     final response = await http.get(post.fullPermalink);
     debugPrint(post.fullPermalink);
-    debugPrint(response.body);
 
     return compute(parsePosts, response.body);
   }

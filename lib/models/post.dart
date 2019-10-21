@@ -1,9 +1,12 @@
+import 'package:flutter/cupertino.dart';
+
 class Post {
   final String id, subreddit, author, title, content, thumbnail, url, source, permalink;
   final DateTime createdAt;
+  DateTime savedAt;
   final int score, numComments;
 
-  Post({this.id, this.subreddit, this.author, this.title, this.score, this.createdAt, this.thumbnail, this.url, this.source, this.content, this.numComments, this.permalink});
+  Post({this.id, this.subreddit, this.author, this.title, this.score, this.createdAt, this.savedAt, this.thumbnail, this.url, this.source, this.content, this.numComments, this.permalink});
 
   factory Post.fromJson(Map<String, dynamic> json) {
     String source;
@@ -37,6 +40,24 @@ class Post {
     }
 
     return score.toString();
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'subreddit': subreddit,
+      'author': author,
+      'title': title,
+      'content': content,
+      'thumbnail': thumbnail,
+      'url': url,
+      'source': source,
+      'permalink': permalink,
+      'createdAt': createdAt?.millisecondsSinceEpoch,
+      'savedAt': savedAt?.millisecondsSinceEpoch,
+      'score': score,
+      'numComments': numComments,
+    };
   }
 
 }
